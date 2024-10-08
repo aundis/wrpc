@@ -96,3 +96,12 @@ type addReq struct {
 func addHandlerfunc(ctx context.Context, req *addReq) (int, error) {
 	return req.A + req.B, nil
 }
+
+func TestUnmarshalNil(t *testing.T) {
+	var a map[string]string
+	err := gconv.Struct(nil, &a)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+}

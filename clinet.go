@@ -89,6 +89,14 @@ func (c *Client) Request(ctx context.Context, req RequestData) (interface{}, err
 	}
 }
 
+func (c *Client) RequestAndUnmarshal(ctx context.Context, req RequestData, pointer interface{}, paramKeyToAttrMap ...map[string]string) error {
+	rsp, err := c.Request(ctx, req)
+	if err != nil {
+		return err
+	}
+	return gconv.Struct(rsp, pointer, paramKeyToAttrMap...)
+}
+
 func (c *Client) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
