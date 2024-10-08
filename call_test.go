@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gctx"
@@ -32,6 +33,7 @@ func TestCall(t *testing.T) {
 
 			ctx := gctx.New()
 			client := NewClient(conn)
+			client.SetData("foo", "bar")
 			client.MustBind("add", addHandlerfunc)
 			client.Start(ctx)
 		})
@@ -94,6 +96,12 @@ type addReq struct {
 }
 
 func addHandlerfunc(ctx context.Context, req *addReq) (int, error) {
+	client := ClientFronCtx(ctx)
+	data := client.GetData("foo")
+	if data != "bar" {
+		return 0, gerror.Newf("except bar but got %v", data)
+	}
+
 	return req.A + req.B, nil
 }
 

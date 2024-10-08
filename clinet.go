@@ -20,6 +20,8 @@ type Client struct {
 	writeMutex sync.Mutex
 	response   *gmap.IntAnyMap
 	handlerMap map[string]*handlerFuncInfo
+	datas      map[string]any
+	datasMutex sync.Mutex
 }
 
 func NewClient(socket *websocket.Conn) *Client {
@@ -29,6 +31,7 @@ func NewClient(socket *websocket.Conn) *Client {
 		counter:    0,
 		response:   gmap.NewIntAnyMap(true),
 		handlerMap: map[string]*handlerFuncInfo{},
+		datas:      map[string]any{},
 	}
 	return r
 }
@@ -145,10 +148,10 @@ func (c *Client) handleMessage(ctx context.Context, msg *Message) (err error) {
 	return
 }
 
-func (c *Client) handleCall(ctx context.Context, msg *Message) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+type clientKey struct{}
 
+func (c *Client) handleCall(ctx context.Context, msg *Message) error {
+	ctx = context.WithValue(ctx, clientKey{}, c)
 	data, err := c.call(ctx, msg.Command, msg.Data)
 	if err != nil {
 		// ignore this error result
@@ -183,4 +186,26 @@ func (c *Client) handleResponse(ctx context.Context, msg *Message) error {
 
 func (c *Client) Close() error {
 	return c.conn.Close()
+}
+
+func (c *Client) SetData(key string, data any) {
+	c.datasMutex.Lock()
+	defer c.datasMutex.Unlock()
+
+	c.datas[key] = data
+}
+
+func (c *Client) GetData(key string) any {
+	c.datasMutex.Lock()
+	defer c.datasMutex.Unlock()
+
+	return c.datas[key]
+}
+
+func ClientFronCtx(ctx context.Context) *Client {
+	v := ctx.Value(clientKey{})
+	if client, ok := v.(*Client); ok {
+		return client
+	}
+	return nil
 }
