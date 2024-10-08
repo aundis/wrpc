@@ -152,7 +152,7 @@ func (c *Client) handleCall(ctx context.Context, msg *Message) error {
 	data, err := c.call(ctx, msg.Command, msg.Data)
 	if err != nil {
 		// ignore this error result
-		c.writeResponse(Message{
+		return c.writeResponse(Message{
 			Id:      msg.Id,
 			Kind:    ResponseKind,
 			Command: msg.Command,
@@ -162,7 +162,7 @@ func (c *Client) handleCall(ctx context.Context, msg *Message) error {
 		})
 	}
 	// success call handle
-	err = c.writeResponse(Message{
+	return c.writeResponse(Message{
 		Id:      msg.Id,
 		Kind:    ResponseKind,
 		Command: msg.Command,
@@ -170,11 +170,6 @@ func (c *Client) handleCall(ctx context.Context, msg *Message) error {
 		Message: "ok",
 		Data:    data,
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c *Client) handleResponse(ctx context.Context, msg *Message) error {
