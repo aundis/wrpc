@@ -12,6 +12,10 @@ import (
 	"github.com/gogf/gf/v2/util/gvalid"
 )
 
+func (c *Client) SetHandleProvider(handleProvider func(name string) *HandlerFuncInfo) {
+	c.handleProvider = handleProvider
+}
+
 func (c *Client) call(ctx context.Context, name string, params ...interface{}) (interface{}, error) {
 	var (
 		ok          bool
@@ -20,7 +24,12 @@ func (c *Client) call(ctx context.Context, name string, params ...interface{}) (
 			reflect.ValueOf(ctx),
 		}
 	)
-	funcInfo := c.handlerMap[name]
+	var funcInfo *HandlerFuncInfo
+	if c.handleProvider != nil {
+		funcInfo = c.handleProvider(name)
+	} else {
+		funcInfo = c.handlerMap[name]
+	}
 	if funcInfo == nil {
 		return nil, gerror.NewCodef(gcode.CodeNotFound, `not found handler '%s'`, name)
 	}
@@ -110,7 +119,7 @@ func (c *Client) MustBind(name string, fn interface{}) {
 }
 
 func (c *Client) Bind(name string, fn interface{}) error {
-	funcInfo, err := c.checkAndCreateFuncInfo(name, fn)
+	funcInfo, err := CheckAndCreateFuncInfo(name, fn)
 	if err != nil {
 		return err
 	}
@@ -118,13 +127,13 @@ func (c *Client) Bind(name string, fn interface{}) error {
 	return nil
 }
 
-type handlerFuncInfo struct {
+type HandlerFuncInfo struct {
 	Type  reflect.Type  // Reflect type information for current handler, which is used for extensions of the handler feature.
 	Value reflect.Value // Reflect value information for current handler, which is used for extensions of the handler feature.
 }
 
-func (c *Client) checkAndCreateFuncInfo(name string, fn interface{}) (funcInfo handlerFuncInfo, err error) {
-	funcInfo = handlerFuncInfo{
+func CheckAndCreateFuncInfo(name string, fn interface{}) (funcInfo HandlerFuncInfo, err error) {
+	funcInfo = HandlerFuncInfo{
 		Type:  reflect.TypeOf(fn),
 		Value: reflect.ValueOf(fn),
 	}

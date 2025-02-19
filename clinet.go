@@ -14,14 +14,15 @@ import (
 )
 
 type Client struct {
-	id         int
-	conn       *websocket.Conn
-	counter    int64
-	writeMutex sync.Mutex
-	response   *gmap.IntAnyMap
-	handlerMap map[string]*handlerFuncInfo
-	datas      map[string]any
-	datasMutex sync.Mutex
+	id             int
+	conn           *websocket.Conn
+	counter        int64
+	writeMutex     sync.Mutex
+	response       *gmap.IntAnyMap
+	handlerMap     map[string]*HandlerFuncInfo
+	handleProvider func(name string) *HandlerFuncInfo
+	datas          map[string]any
+	datasMutex     sync.Mutex
 }
 
 func NewClient(socket *websocket.Conn) *Client {
@@ -30,7 +31,7 @@ func NewClient(socket *websocket.Conn) *Client {
 		conn:       socket,
 		counter:    0,
 		response:   gmap.NewIntAnyMap(true),
-		handlerMap: map[string]*handlerFuncInfo{},
+		handlerMap: map[string]*HandlerFuncInfo{},
 		datas:      map[string]any{},
 	}
 	return r
