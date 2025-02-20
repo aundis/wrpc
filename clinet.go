@@ -14,15 +14,16 @@ import (
 )
 
 type Client struct {
-	id             int
-	conn           *websocket.Conn
-	counter        int64
-	writeMutex     sync.Mutex
-	response       *gmap.IntAnyMap
-	handlerMap     map[string]*HandlerFuncInfo
-	handleProvider func(name string) *HandlerFuncInfo
-	datas          map[string]any
-	datasMutex     sync.Mutex
+	id                 int
+	conn               *websocket.Conn
+	counter            int64
+	writeMutex         sync.Mutex
+	response           *gmap.IntAnyMap
+	handlerMap         map[string]*HandlerFuncInfo
+	handleProvider     func(name string) *HandlerFuncInfo
+	handleContextValue map[any]any
+	datas              map[string]any
+	datasMutex         sync.Mutex
 }
 
 func NewClient(socket *websocket.Conn) *Client {
@@ -141,7 +142,7 @@ func (c *Client) handleMessage(ctx context.Context, msg *Message) (err error) {
 	case RequestKind:
 		err = c.handleCall(ctx, msg)
 	case ResponseKind:
-		err = c.handleResponse(ctx, msg)
+		err = c.handleResponse(msg)
 	default:
 		err = errors.New("not support kind")
 	}
@@ -176,7 +177,7 @@ func (c *Client) handleCall(ctx context.Context, msg *Message) error {
 	})
 }
 
-func (c *Client) handleResponse(ctx context.Context, msg *Message) error {
+func (c *Client) handleResponse(msg *Message) error {
 	ch := c.response.Remove(int(msg.Id))
 	if ch != nil {
 		ch.(chan Message) <- *msg

@@ -16,7 +16,18 @@ func (c *Client) SetHandleProvider(handleProvider func(name string) *HandlerFunc
 	c.handleProvider = handleProvider
 }
 
+func (c *Client) SetHandleContextValue(values map[any]any) {
+	c.handleContextValue = values
+}
+
 func (c *Client) call(ctx context.Context, name string, params ...interface{}) (interface{}, error) {
+	// 为处理器的上下文附加用户自定义值
+	if c.handleContextValue != nil {
+		for k, v := range c.handleContextValue {
+			ctx = context.WithValue(ctx, k, v)
+		}
+	}
+
 	var (
 		ok          bool
 		err         error
