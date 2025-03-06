@@ -58,6 +58,10 @@ func (c *Client) generateRequestId() int {
 	return int(atomic.AddInt64(&c.counter, 1))
 }
 
+func (c *Client) PostMessage(ctx context.Context, msg Message) error {
+	return c.writeResponse(msg)
+}
+
 // Request send request and wait response
 func (c *Client) Request(ctx context.Context, req RequestData) (interface{}, error) {
 	if req.Timeout == 0 {
