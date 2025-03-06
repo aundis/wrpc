@@ -215,7 +215,7 @@ func ClientFromCtx(ctx context.Context) *Client {
 	return nil
 }
 
-func MsgIdFromCtx(ctx context.Context) *Message {
+func MessageFromCtx(ctx context.Context) *Message {
 	v := ctx.Value(messageKey{})
 	if msg, ok := v.(*Message); ok {
 		return msg
