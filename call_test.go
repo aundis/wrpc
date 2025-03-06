@@ -96,7 +96,7 @@ type addReq struct {
 }
 
 func addHandlerfunc(ctx context.Context, req *addReq) (int, error) {
-	client := ClientFronCtx(ctx)
+	client := ClientFromCtx(ctx)
 	data := client.GetData("foo")
 	if data != "bar" {
 		return 0, gerror.Newf("except bar but got %v", data)

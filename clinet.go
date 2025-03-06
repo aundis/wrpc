@@ -151,9 +151,12 @@ func (c *Client) handleMessage(ctx context.Context, msg *Message) (err error) {
 }
 
 type clientKey struct{}
+type messageKey struct{}
 
 func (c *Client) handleCall(ctx context.Context, msg *Message) error {
 	ctx = context.WithValue(ctx, clientKey{}, c)
+	ctx = context.WithValue(ctx, messageKey{}, msg)
+
 	data, err := c.call(ctx, msg.Command, msg.Data)
 	if err != nil {
 		// ignore this error result
@@ -204,10 +207,18 @@ func (c *Client) GetData(key string) any {
 	return c.datas[key]
 }
 
-func ClientFronCtx(ctx context.Context) *Client {
+func ClientFromCtx(ctx context.Context) *Client {
 	v := ctx.Value(clientKey{})
 	if client, ok := v.(*Client); ok {
 		return client
+	}
+	return nil
+}
+
+func MsgIdFromCtx(ctx context.Context) *Message {
+	v := ctx.Value(messageKey{})
+	if msg, ok := v.(*Message); ok {
+		return msg
 	}
 	return nil
 }
