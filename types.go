@@ -10,6 +10,7 @@ type MessageKind int
 
 const RequestKind MessageKind = 0
 const ResponseKind MessageKind = 1
+const EventKind MessageKind = 2
 
 type Message struct {
 	Id      int         `json:"id"`
