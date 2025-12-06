@@ -37,14 +37,14 @@ func TestCall(t *testing.T) {
 			client.MustBind("add", addHandlerfunc)
 			client.Start(ctx)
 		})
-		s.SetPort(8199)
+		s.SetPort(8399)
 		s.Run()
 	}()
 
 	time.Sleep(1 * time.Second)
 
 	// 客户端
-	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:8199/ws", nil)
+	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:8399/ws", nil)
 	// t.Log("dial rsp:", rsp)
 	if err != nil {
 		t.Error("ws dial error:", err)

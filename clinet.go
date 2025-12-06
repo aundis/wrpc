@@ -3,6 +3,7 @@ package wrpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -133,6 +134,11 @@ func (c *Client) Start(ctx context.Context) error {
 
 func (c *Client) handleMessage(ctx context.Context, msg *Message) (err error) {
 	defer func() {
+		if r := recover(); r != nil {
+			// 将 panic 转换为 error
+			err = fmt.Errorf("panic: %v", r)
+		}
+
 		if err != nil {
 			c.writeResponse(Message{
 				Id:      msg.Id,
